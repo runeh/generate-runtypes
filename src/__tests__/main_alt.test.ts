@@ -44,7 +44,21 @@ describe('runtype generation', () => {
             { name: 'someString', type: { kind: 'string' } },
             { name: 'someUnknown', type: { kind: 'unknown' } },
             { name: 'someVoid', type: { kind: 'void' } },
-            { name: 'someLiteral', type: { kind: 'literal', value: 'boop' } },
+            {
+              name: 'someLiteral1',
+              type: { kind: 'literal', value: 'string' },
+            },
+            { name: 'someLiteral2', type: { kind: 'literal', value: 1337 } },
+            { name: 'someLiteral3', type: { kind: 'literal', value: true } },
+            { name: 'someLiteral4', type: { kind: 'literal', value: null } },
+            {
+              name: 'someLiteral5',
+              type: { kind: 'literal', value: undefined },
+            },
+            {
+              name: 'someDictionary',
+              type: { kind: 'dictionary', valueType: { kind: 'boolean' } },
+            },
             {
               name: 'someArray',
               type: { kind: 'array', type: { kind: 'string' }, readonly: true },
@@ -52,6 +66,22 @@ describe('runtype generation', () => {
             {
               name: 'someNamedType',
               type: { kind: 'named', name: 'personRt' },
+            },
+            {
+              name: 'someIntersection',
+              type: {
+                kind: 'intersect',
+                types: [
+                  {
+                    kind: 'record',
+                    fields: [{ name: 'member1', type: { kind: 'string' } }],
+                  },
+                  {
+                    kind: 'record',
+                    fields: [{ name: 'member2', type: { kind: 'number' } }],
+                  },
+                ],
+              },
             },
             {
               name: 'someObject',
@@ -94,9 +124,22 @@ describe('runtype generation', () => {
         someString: rt.String,
         someUnknown: rt.Unknown,
         someVoid: rt.Void,
-        someLiteral: rt.Literal('boop'),
+        someLiteral1: rt.Literal('string'),
+        someLiteral2: rt.Literal(1337),
+        someLiteral3: rt.Literal(true),
+        someLiteral4: rt.Literal(null),
+        someLiteral5: rt.Literal(undefined),
+        someDictionary: rt.Dictionary(rt.Boolean),
         someArray: rt.Array(rt.String).asReadonly(),
         someNamedType: personRt,
+        someIntersection: rt.Intersect(
+          rt.Record({
+            member1: rt.String,
+          }),
+          rt.Record({
+            member2: rt.Number,
+          }),
+        ),
         someObject: rt.Record({
           name: rt.String,
           age: rt.Number,

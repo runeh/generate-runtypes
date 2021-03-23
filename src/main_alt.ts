@@ -8,6 +8,7 @@ import {
 import {
   AnyType,
   ArrayType,
+  DictionaryType,
   LiteralType,
   NamedType,
   RecordType,
@@ -46,18 +47,18 @@ const writers: Record<
   union: writeUnionType,
   literal: writeLiteralType,
   named: writeNamedType,
-
-  dictionary: () => {
-    throw new Error('not implemented');
-  },
-
-  intersect: () => {
-    throw new Error('not implemented');
-  },
+  intersect: writeIntersectionType,
+  dictionary: writeDictionaryType,
 };
 
 function simpleWriter(value: string): (writer: CodeBlockWriter) => void {
   return (writer) => writer.write(value);
+}
+
+function writeDictionaryType(w: CodeBlockWriter, node: DictionaryType) {
+  w.write('rt.Dictionary(');
+  writeAnyType(w, node.valueType);
+  w.write(')');
 }
 
 function writeNamedType(w: CodeBlockWriter, node: NamedType) {
@@ -73,9 +74,9 @@ function writeLiteralType(w: CodeBlockWriter, node: LiteralType) {
   const { value } = node;
   w.write('rt.Literal(');
   if (value === undefined) {
-    w.write('rt.Undefined');
+    w.write('undefined');
   } else if (value === null) {
-    w.write('rt.Null');
+    w.write('null');
   } else if (typeof value === 'string') {
     w.write(`'${value}'`);
   } else {
@@ -94,6 +95,15 @@ function writeArrayType(w: CodeBlockWriter, node: ArrayType) {
 
 function writeUnionType(w: CodeBlockWriter, node: UnionType) {
   w.writeLine('rt.Union(');
+  for (const type of node.types) {
+    writeAnyType(w, type);
+    w.write(', ');
+  }
+  w.write(') ');
+}
+
+function writeIntersectionType(w: CodeBlockWriter, node: UnionType) {
+  w.writeLine('rt.Intersect(');
   for (const type of node.types) {
     writeAnyType(w, type);
     w.write(', ');
