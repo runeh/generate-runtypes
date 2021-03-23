@@ -17,53 +17,77 @@ describe('runtype generation', () => {
   });
 
   it('smoke test', async () => {
-    createRuntypes(file, {
-      export: true,
-      name: 'smokeTest',
-      type: {
-        kind: 'record',
-        fields: [
-          { name: 'someBoolean', type: { kind: 'boolean' } },
-          { name: 'someNever', type: { kind: 'never' } },
-          { name: 'someNumber', type: { kind: 'number' } },
-          { name: 'someString', type: { kind: 'string' } },
-          { name: 'someUnknown', type: { kind: 'unknown' } },
-          { name: 'someVoid', type: { kind: 'void' } },
-          { name: 'someLiteral', type: { kind: 'literal', value: 'boop' } },
-          {
-            name: 'someArray',
-            type: { kind: 'array', type: { kind: 'string' }, readonly: true },
-          },
-          {
-            name: 'someObject',
-            type: {
-              kind: 'record',
-              fields: [
-                { name: 'name', readonly: true, type: { kind: 'string' } },
-                { name: 'age', readonly: true, type: { kind: 'number' } },
-                {
-                  name: 'medals',
-                  readonly: true,
-                  type: {
-                    kind: 'union',
-                    types: [
-                      { kind: 'literal', value: '1' },
-                      { kind: 'literal', value: '2' },
-                      { kind: 'literal', value: '3' },
-                      { kind: 'literal', value: 'last' },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
+    createRuntypes(
+      file,
+
+      {
+        name: 'personRt',
+        export: false,
+        type: {
+          kind: 'record',
+          fields: [
+            { name: 'name', readonly: true, type: { kind: 'string' } },
+            { name: 'age', readonly: true, type: { kind: 'number' } },
+          ],
+        },
       },
-    });
+
+      {
+        export: true,
+        name: 'smokeTest',
+        type: {
+          kind: 'record',
+          fields: [
+            { name: 'someBoolean', type: { kind: 'boolean' } },
+            { name: 'someNever', type: { kind: 'never' } },
+            { name: 'someNumber', type: { kind: 'number' } },
+            { name: 'someString', type: { kind: 'string' } },
+            { name: 'someUnknown', type: { kind: 'unknown' } },
+            { name: 'someVoid', type: { kind: 'void' } },
+            { name: 'someLiteral', type: { kind: 'literal', value: 'boop' } },
+            {
+              name: 'someArray',
+              type: { kind: 'array', type: { kind: 'string' }, readonly: true },
+            },
+            {
+              name: 'someNamedType',
+              type: { kind: 'named', name: 'personRt' },
+            },
+            {
+              name: 'someObject',
+              type: {
+                kind: 'record',
+                fields: [
+                  { name: 'name', readonly: true, type: { kind: 'string' } },
+                  { name: 'age', readonly: true, type: { kind: 'number' } },
+                  {
+                    name: 'medals',
+                    readonly: true,
+                    type: {
+                      kind: 'union',
+                      types: [
+                        { kind: 'literal', value: '1' },
+                        { kind: 'literal', value: '2' },
+                        { kind: 'literal', value: '3' },
+                        { kind: 'literal', value: 'last' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    );
     const raw = file.getText();
     const formatted = await fmt(raw);
     expect(formatted).toMatchInlineSnapshot(`
-      "export const smokeTest = rt.Record({
+      "const personRt = rt.Record({
+        name: rt.String,
+        age: rt.Number,
+      });
+      export const smokeTest = rt.Record({
         someBoolean: rt.Boolean,
         someNever: rt.Never,
         someNumber: rt.Number,
@@ -72,6 +96,7 @@ describe('runtype generation', () => {
         someVoid: rt.Void,
         someLiteral: rt.Literal('boop'),
         someArray: rt.Array(rt.String).asReadonly(),
+        someNamedType: personRt,
         someObject: rt.Record({
           name: rt.String,
           age: rt.Number,

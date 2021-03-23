@@ -9,6 +9,7 @@ import {
   AnyType,
   ArrayType,
   LiteralType,
+  NamedType,
   RecordType,
   RootType,
   UnionType,
@@ -44,6 +45,7 @@ const writers: Record<
   record: writeRecordType,
   union: writeUnionType,
   literal: writeLiteralType,
+  named: writeNamedType,
 
   dictionary: () => {
     throw new Error('not implemented');
@@ -52,14 +54,14 @@ const writers: Record<
   intersect: () => {
     throw new Error('not implemented');
   },
-
-  named: () => {
-    throw new Error('not implemented');
-  },
 };
 
 function simpleWriter(value: string): (writer: CodeBlockWriter) => void {
   return (writer) => writer.write(value);
+}
+
+function writeNamedType(w: CodeBlockWriter, node: NamedType) {
+  w.write(node.name);
 }
 
 function writeAnyType(w: CodeBlockWriter, node: AnyType) {
